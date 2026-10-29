@@ -2,6 +2,7 @@ package nmea
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -21,17 +22,21 @@ func (s BaseSentence) Raw() string    { return s.raw }
 func (s BaseSentence) Talker() string { return s.talker }
 func (s BaseSentence) Type() string   { return s.stype }
 
+// Times of day without a date (GGA, GLL, GNS, GST) are on January 1 of
+// year 0; MergeTime puts them on a known date.
+
 // RMC — Recommended Minimum Navigation Information
 type RMC struct {
 	BaseSentence
-	Time   time.Time
-	Status string // A=active/valid, V=void/invalid
-	Lat    float64
-	Lon    float64
-	Speed  float64 // knots
-	Course float64 // degrees true
-	MagVar float64
-	Mode   string
+	Time      time.Time `json:"time"`   // UTC date and time; year 0 when no date was sent
+	Status    string    `json:"status"` // A=active/valid, V=void/invalid
+	Lat       float64   `json:"lat"`
+	Lon       float64   `json:"lon"`
+	Speed     float64   `json:"speed"`                // knots
+	Course    float64   `json:"course"`               // degrees true
+	MagVar    float64   `json:"mag_var"`              // magnetic variation in degrees, negative west
+	Mode      string    `json:"mode"`                 // A=autonomous, D=differential, E=estimated, N=not valid, ...
+	NavStatus string    `json:"nav_status,omitempty"` // NMEA 4.10: S=safe, C=caution, U=unsafe, V=not valid
 }
 
 func (s RMC) Valid() bool { return s.Status == "A" }
@@ -47,16 +52,16 @@ func (s RMC) String() string {
 // GGA — Global Positioning System Fix Data
 type GGA struct {
 	BaseSentence
-	Time      time.Time
-	Lat       float64
-	Lon       float64
-	Quality   int // 0=invalid, 1=GPS, 2=DGPS
-	NumSats   int
-	HDOP      float64
-	Altitude  float64
-	GeoidSep  float64
-	Age       float64
-	StationID string
+	Time      time.Time `json:"time"` // time of day
+	Lat       float64   `json:"lat"`
+	Lon       float64   `json:"lon"`
+	Quality   int       `json:"quality"` // 0=invalid, 1=GPS, 2=DGPS, 4=RTK fixed, 5=RTK float, 6=estimated
+	NumSats   int       `json:"num_sats"`
+	HDOP      float64   `json:"hdop"`
+	Altitude  float64   `json:"altitude"`  // metres above mean sea level
+	GeoidSep  float64   `json:"geoid_sep"` // metres
+	Age       float64   `json:"age"`       // seconds since the last differential update
+	StationID string    `json:"station_id"`
 }
 
 func (s GGA) Valid() bool { return s.Quality > 0 }
@@ -72,12 +77,13 @@ func (s GGA) String() string {
 // GSA — GNSS DOP and Active Satellites
 type GSA struct {
 	BaseSentence
-	Mode       string // M=manual, A=automatic
-	FixMode    int    // 1=no fix, 2=2D, 3=3D
-	Satellites []int
-	PDOP       float64
-	HDOP       float64
-	VDOP       float64
+	Mode       string  `json:"mode"`     // M=manual, A=automatic
+	FixMode    int     `json:"fix_mode"` // 1=no fix, 2=2D, 3=3D
+	Satellites []int   `json:"satellites"`
+	PDOP       float64 `json:"pdop"`
+	HDOP       float64 `json:"hdop"`
+	VDOP       float64 `json:"vdop"`
+	SystemID   int     `json:"system_id,omitempty"` // NMEA 4.10: 1=GPS, 2=GLONASS, 3=Galileo, 4=BeiDou, 5=QZSS, 6=NavIC
 }
 
 func (s GSA) Valid() bool { return s.FixMode >= 2 }
@@ -90,17 +96,18 @@ func (s GSA) String() string {
 // GSV — GNSS Satellites in View
 type GSV struct {
 	BaseSentence
-	NumMsg    int
-	MsgNum    int
-	NumSats   int
-	Satellites []Satellite
+	NumMsg     int         `json:"num_msg"`
+	MsgNum     int         `json:"msg_num"`
+	NumSats    int         `json:"num_sats"`
+	Satellites []Satellite `json:"satellites"`
+	SignalID   int         `json:"signal_id,omitempty"` // NMEA 4.10; 0 when not sent
 }
 
 type Satellite struct {
-	PRN       int
-	Elevation int
-	Azimuth   int
-	SNR       int
+	PRN       int `json:"prn"`
+	Elevation int `json:"elevation"` // degrees
+	Azimuth   int `json:"azimuth"`   // degrees true
+	SNR       int `json:"snr"`       // dB-Hz; 0 when not tracked
 }
 
 func (s GSV) String() string {
@@ -108,25 +115,27 @@ func (s GSV) String() string {
 }
 
 func (s GSV) Details() string {
-	out := fmt.Sprintf("%s\n", s)
+	var b strings.Builder
+	b.WriteString(s.String())
+	b.WriteByte('\n')
 	for _, sv := range s.Satellites {
-		snr := fmt.Sprintf("%d", sv.SNR)
-		if sv.SNR == 0 {
-			snr = "--"
+		snr := "--"
+		if sv.SNR != 0 {
+			snr = fmt.Sprint(sv.SNR)
 		}
-		out += fmt.Sprintf("  PRN %3d  el=%3d°  az=%3d°  snr=%s\n", sv.PRN, sv.Elevation, sv.Azimuth, snr)
+		fmt.Fprintf(&b, "  PRN %3d  el=%3d°  az=%3d°  snr=%s\n", sv.PRN, sv.Elevation, sv.Azimuth, snr)
 	}
-	return out
+	return b.String()
 }
 
 // VTG — Course Over Ground and Ground Speed
 type VTG struct {
 	BaseSentence
-	CourseTrue     float64
-	CourseMagnetic float64
-	SpeedKnots     float64
-	SpeedKMH       float64
-	Mode           string
+	CourseTrue     float64 `json:"course_true"`
+	CourseMagnetic float64 `json:"course_magnetic"`
+	SpeedKnots     float64 `json:"speed_knots"`
+	SpeedKMH       float64 `json:"speed_kmh"`
+	Mode           string  `json:"mode"`
 }
 
 func (s VTG) String() string {
@@ -137,11 +146,11 @@ func (s VTG) String() string {
 // GLL — Geographic Position - Latitude/Longitude
 type GLL struct {
 	BaseSentence
-	Lat    float64
-	Lon    float64
-	Time   time.Time
-	Status string
-	Mode   string
+	Lat    float64   `json:"lat"`
+	Lon    float64   `json:"lon"`
+	Time   time.Time `json:"time"` // time of day
+	Status string    `json:"status"`
+	Mode   string    `json:"mode"`
 }
 
 func (s GLL) Valid() bool { return s.Status == "A" }
@@ -156,9 +165,9 @@ func (s GLL) String() string {
 // ZDA — Time and Date
 type ZDA struct {
 	BaseSentence
-	Time             time.Time
-	LocalZoneHours   int
-	LocalZoneMinutes int
+	Time             time.Time `json:"time"`
+	LocalZoneHours   int       `json:"local_zone_hours"`
+	LocalZoneMinutes int       `json:"local_zone_minutes"`
 }
 
 func (s ZDA) String() string {
@@ -168,10 +177,10 @@ func (s ZDA) String() string {
 // TXT — Text Transmission
 type TXT struct {
 	BaseSentence
-	Total   int
-	Num     int
-	MsgType int
-	Text    string
+	Total   int    `json:"total"`
+	Num     int    `json:"num"`
+	MsgType int    `json:"msg_type"` // 0=error, 1=warning, 2=notice, 7=user
+	Text    string `json:"text"`
 }
 
 func (s TXT) String() string {
@@ -181,19 +190,21 @@ func (s TXT) String() string {
 // GNS — GNSS Fix Data (multi-constellation version of GGA)
 type GNS struct {
 	BaseSentence
-	Time     time.Time
-	Lat      float64
-	Lon      float64
-	Mode     string // characters: G=GPS, R=GLONASS, E=Galileo, C=BeiDou, Q=QZSS, I=IRNSS
-	NumSats  int
-	HDOP     float64
-	Altitude float64
-	GeoidSep float64
-	Age      float64
-	StationID string
+	Time      time.Time `json:"time"` // time of day
+	Lat       float64   `json:"lat"`
+	Lon       float64   `json:"lon"`
+	Mode      string    `json:"mode"` // one character per system (GPS, GLONASS, Galileo, BeiDou, ...): N=no fix, A=autonomous, D=differential, R=RTK, ...
+	NumSats   int       `json:"num_sats"`
+	HDOP      float64   `json:"hdop"`
+	Altitude  float64   `json:"altitude"`
+	GeoidSep  float64   `json:"geoid_sep"`
+	Age       float64   `json:"age"`
+	StationID string    `json:"station_id"`
+	NavStatus string    `json:"nav_status,omitempty"` // NMEA 4.10
 }
 
-func (s GNS) Valid() bool { return s.Mode != "" && s.Mode != "N" }
+// Valid reports whether any system has a fix.
+func (s GNS) Valid() bool { return strings.Trim(s.Mode, "N") != "" }
 
 func (s GNS) String() string {
 	if !s.Valid() {
@@ -206,14 +217,14 @@ func (s GNS) String() string {
 // GST — GNSS Pseudorange Error Statistics
 type GST struct {
 	BaseSentence
-	Time        time.Time
-	RMS         float64 // RMS pseudorange residuals
-	MajorStd    float64 // semi-major axis std dev
-	MinorStd    float64 // semi-minor axis std dev
-	Orient      float64 // orientation of semi-major axis (degrees)
-	LatStd      float64 // latitude error std dev
-	LonStd      float64 // longitude error std dev
-	AltStd      float64 // altitude error std dev
+	Time     time.Time `json:"time"`      // time of day
+	RMS      float64   `json:"rms"`       // RMS pseudorange residuals
+	MajorStd float64   `json:"major_std"` // semi-major axis std dev, metres
+	MinorStd float64   `json:"minor_std"` // semi-minor axis std dev, metres
+	Orient   float64   `json:"orient"`    // orientation of semi-major axis (degrees)
+	LatStd   float64   `json:"lat_std"`   // latitude error std dev, metres
+	LonStd   float64   `json:"lon_std"`   // longitude error std dev, metres
+	AltStd   float64   `json:"alt_std"`   // altitude error std dev, metres
 }
 
 func (s GST) String() string {
@@ -221,10 +232,11 @@ func (s GST) String() string {
 		s.RMS, s.LatStd, s.LonStd, s.AltStd)
 }
 
-// UnknownSentence — fallback for unrecognized types
+// UnknownSentence — fallback for unrecognized and proprietary ($P...)
+// sentences. Proprietary sentences have talker "P".
 type UnknownSentence struct {
 	BaseSentence
-	Fields []string
+	Fields []string `json:"fields"`
 }
 
 func (s UnknownSentence) String() string {

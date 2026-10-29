@@ -1,0 +1,62 @@
+/* Pages of the GNSS module. Colours come from the aliases in style.css. */
+:root, :host {
+  --sys-gps: #3b82f6;
+  --sys-glonass: #ef4444;
+  --sys-galileo: #22a35a;
+  --sys-beidou: #e08a10;
+  --sys-qzss: #a855f7;
+  --sys-navic: #0ea5b7;
+  --sys-sbas: #8b93a1;
+  --sys-other: #8b93a1;
+}
+.sys-gps { --sys: var(--sys-gps); }
+.sys-glonass { --sys: var(--sys-glonass); }
+.sys-galileo { --sys: var(--sys-galileo); }
+.sys-beidou { --sys: var(--sys-beidou); }
+.sys-qzss { --sys: var(--sys-qzss); }
+.sys-navic { --sys: var(--sys-navic); }
+.sys-sbas { --sys: var(--sys-sbas); }
+.sys-other { --sys: var(--sys-other); }
+
+.section-sm { margin-top: 14px; }
+.section-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.card-head h2 { margin: 0; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.stat-value { font-variant-numeric: tabular-nums; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; }
+.legend > span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Position */
+.coords { font-size: 20px; font-weight: 600; margin-bottom: 12px; overflow-wrap: anywhere; }
+.heading { width: 14px; height: 14px; vertical-align: -2px; fill: var(--primary); }
+.messages { display: grid; gap: 2px; }
+.track { display: block; width: 100%; height: auto; background: var(--surface-2); border-radius: var(--radius); }
+.track-line { fill: none; stroke: var(--primary); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.track-head { fill: var(--primary); stroke: var(--surface); stroke-width: 2; }
+.track-scale path { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.track-scale text, .track-north { fill: var(--muted); font-size: 11px; }
+
+/* Satellites */
+.sys-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--sys); margin-right: 8px; vertical-align: 0; }
+.sky { display: block; width: 100%; max-width: 380px; margin: 0 auto 12px; }
+.sky-ring { fill: none; stroke: var(--border); stroke-width: 1; }
+.sky-label { fill: var(--muted); font-size: 10px; font-weight: 600; }
+.sky-el { fill: var(--muted); font-size: 7px; }
+.sky-sat circle { fill: var(--surface); stroke: var(--sys); stroke-width: 1.6; }
+.sky-sat text { fill: var(--sys); font-size: 6.5px; font-weight: 650; }
+.sky-sat.used circle { fill: var(--sys); }
+.sky-sat.used text { fill: #fff; }
+.sky-sat.untracked { opacity: .45; }
+.sky-legend { justify-content: center; }
+
+.bars { display: flex; align-items: stretch; gap: 3px; height: 220px; overflow-x: auto; padding-bottom: 2px; }
+.bar { position: relative; flex: 1 0 18px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-width: 18px; }
+.bar-fill { width: 100%; background: color-mix(in srgb, var(--sys) 35%, transparent); border: 1.5px solid var(--sys); border-bottom: 0; border-radius: 3px 3px 0 0; transition: height .4s; }
+.bar.used .bar-fill { background: var(--sys); }
+.bar-value { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar-label { font-size: 10px; color: var(--muted); border-top: 1px solid var(--border); width: 100%; text-align: center; padding-top: 2px; font-family: var(--mono); }
+
+/* Sentences */
+.log { --log-height: min(50vh, 420px); }
+.decoded { margin: 0; padding: 12px; max-height: 320px; overflow: auto; background: var(--surface-2); border-radius: var(--radius); font: 12.5px/1.5 var(--mono); }

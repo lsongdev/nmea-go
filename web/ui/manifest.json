@@ -1,0 +1,14 @@
+{
+  "contract": 1,
+  "id": "nmea",
+  "title": "GNSS",
+  "icon": "◎",
+  "entry": "module.js",
+  "styles": ["stylesheets.css", "style.css", "nmea.css"],
+  "home": "/",
+  "nav": [
+    { "path": "/", "title": "Position", "icon": "◎", "group": "Receiver" },
+    { "path": "/satellites", "title": "Satellites", "icon": "✦", "group": "Receiver" },
+    { "path": "/sentences", "title": "Sentences", "icon": "≡", "group": "Receiver" }
+  ]
+}

@@ -1,4 +1,4 @@
-# GPS-Go
+# nmea-Go
 
 Pure Go NMEA 0183 protocol parser library with zero dependencies, supporting GPS/BeiDou/GLONASS standard sentences.
 
@@ -37,12 +37,42 @@ s, _ := r.Read()
 | ZDA | `nmea.ZDA` | Date and time |
 | TXT | `nmea.TXT` | Text message |
 
+## HTTP API and Web UI
+
+`cmd/nmea-server` reads a serial port, a TCP stream or a recorded file and serves the live state with a browser UI (Preact + HTM, no build step):
+
+```sh
+go run ./cmd/nmea-server -source /dev/ttyUSB0 -baud 9600
+go run ./cmd/nmea-server -source tcp://192.168.1.10:10110
+go run ./cmd/nmea-server -source testdata/sample.nmea   # replay, 1 fix/s
+```
+
+Open http://localhost:8080. Set `-token` (or `NMEA_TOKEN`) to require a Bearer token / basic-auth password.
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/state` | Everything below in one snapshot |
+| `GET /api/fix` | Merged position fix (RMC/GGA/GNS/GSA/GST/VTG/ZDA) |
+| `GET /api/satellites` | Satellites in view, with system and whether used in the fix |
+| `GET /api/status` | Source state and sentence counters |
+| `GET /api/sentences?after=&limit=&type=` | Recent raw sentences |
+| `POST /api/parse` | Decode `{"sentence": "$..."}` without logging it |
+| `GET /api/events?sentences=1` | Server-sent events: `state` on change, `sentence` per line |
+
+The `api` package (`api.NewTracker`, `api.NewHandler`) and `web` package (`web.Standalone`, `web.Assets`) can be embedded in other programs.
+
 ## Get UTC Time
 
 ```go
-t, ok := r.Time()             // Reader caches latest time automatically
-t, ok := nmea.TimeFromSentence(s) // Extract time from a single sentence
+t, ok := r.Time()                  // latest date+time, advanced by GGA/GLL/GNS/GST times of day
+t, ok := nmea.TimeFromSentence(s)  // complete date+time: RMC (with a fix) or ZDA
+tod, ok := nmea.TimeOfDay(s)       // time of day only, from any timed sentence
+t = nmea.MergeTime(last, tod)      // put a time of day on a known date (handles midnight)
 ```
+
+## Errors
+
+`Parse` and `Reader.Read` return errors wrapping `nmea.ErrFormat` (malformed or truncated) or `nmea.ErrChecksum`; after one, `Read` can be called again. Proprietary sentences (`$PUBX`, `$PMTK…`) parse as `UnknownSentence` with talker `"P"`.
 
 ## Design Principles
 
