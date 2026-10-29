@@ -2,6 +2,7 @@
 // the top navigation and drives mount() from the URL hash, exactly as a
 // panel shell would.
 import { html, render } from './lib/html.js';
+import { Navbar } from './node_modules/@lsongdev/scripts/react/components/navbar.js';
 import { mount } from './module.js';
 
 const manifest = await (await fetch('manifest.json')).json();
@@ -42,8 +43,12 @@ function TopBar({ path }) {
     .filter(i => path === i.path || (i.path !== '/' && path.startsWith(i.path + '/')))
     .sort((a, b) => b.path.length - a.path.length)[0];
   return html`
-    <a class="brand" href="#/"><span class="brand-mark">◆</span>${manifest.title}</a>
-    <nav>${(manifest.nav || []).map(i => html`<a class=${`nav-link ${i === active ? 'active' : ''}`} href=${href(i.path)}>${i.title}</a>`)}</nav>`;
+    <${Navbar}
+      className="topbar"
+      brand=${manifest.title}
+      mark="◆"
+      items=${(manifest.nav || []).map(i => ({ href: href(i.path), title: i.title, active: i === active }))}
+    />`;
 }
 
 const topbar = document.getElementById('topbar');

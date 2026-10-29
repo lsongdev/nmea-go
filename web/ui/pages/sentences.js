@@ -56,12 +56,12 @@ export default function Sentences({ query, setQuery }) {
       </select>
       <button class="button" type="button" onClick=${() => setPaused(p => !p)}>${paused ? 'Resume' : 'Pause'}</button>
       <button class="button button-ghost" type="button" onClick=${() => setLines([])}>Clear</button>
-      <span class="spacer"></span>
+      <span class="flex-1"></span>
       <span class="muted">${paused ? 'Paused' : 'Live'} · ${lines.length} lines</span>
     </div>
     <${LogView} lines=${lines.map(l => (l.error ? { text: `${l.raw}    ← ${l.error}`, stream: 'stderr' } : l.raw))}
       follow=${!paused} empty="Waiting for sentences…" />
-    <div class="grid-2 section">
+    <div class="grid grid-auto grid-pair section">
       <div>
         <h2 class="section-title">By type</h2>
         <${Table}>

@@ -15,7 +15,7 @@ export default function Satellites() {
     <${Notice} error=${error} />
     <${SourceNotice} status=${snap.status} />
     ${sats.length === 0 ? html`<${Empty}>No satellites in view yet (GSV sentences).<//>` : html`
-      <div class="grid-2">
+      <div class="grid grid-auto grid-pair">
         <div class="card">
           <h2>Sky</h2>
           <${SkyPlot} sats=${sats} />

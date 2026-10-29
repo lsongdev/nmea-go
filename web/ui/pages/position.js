@@ -15,7 +15,7 @@ export default function Position() {
   return html`<${Page} title="Position" subtitle=${utc(fix.time)} actions=${html`<${FixBadge} fix=${fix} />`}>
     <${Notice} error=${error} />
     <${SourceNotice} status=${status} />
-    <div class="grid">
+    <div class="grid grid-auto-fill">
       <${Stat} label="Fix" value=${fix.valid ? FIX_MODES[fix.mode] || 'Fix' : 'No fix'}
         sub=${fix.quality ? QUALITY[fix.quality] || `Quality ${fix.quality}` : 'Waiting for satellites'} />
       <${Stat} label="Satellites" value=${`${used || fix.num_sats} / ${satellites.length}`} sub="Used / in view" />
@@ -25,7 +25,7 @@ export default function Position() {
         sub=${fix.alt_std ? `Vertical ±${fixed(fix.alt_std)} m` : 'From GST, when sent'} />
       <${Stat} label="Dilution" value=${`HDOP ${fixed(fix.hdop)}`} sub=${`PDOP ${fixed(fix.pdop)} · VDOP ${fixed(fix.vdop)}`} />
     </div>
-    <div class="grid-2 section">
+    <div class="grid grid-auto grid-pair section">
       <div class="card">
         <h2>Coordinates</h2>
         ${hasPos ? html`
@@ -47,7 +47,7 @@ export default function Position() {
         <${Track} points=${track} />
       </div>
     </div>
-    <div class="card section">
+    <div class="card">
       <h2>Receiver</h2>
       <${KV} items=${[
         ['Source', html`<code>${status.source}</code>`],

@@ -4,7 +4,7 @@
   "title": "GNSS",
   "icon": "◎",
   "entry": "module.js",
-  "styles": ["stylesheets.css", "style.css", "nmea.css"],
+  "styles": ["style.css", "nmea.css"],
   "home": "/",
   "nav": [
     { "path": "/", "title": "Position", "icon": "◎", "group": "Receiver" },
