@@ -23,8 +23,8 @@ import (
 
 	"go.bug.st/serial"
 
-	"github.com/lsongdev/gps-go/api"
-	"github.com/lsongdev/gps-go/web"
+	"github.com/lsongdev/nmea-go/api"
+	"github.com/lsongdev/nmea-go/web"
 )
 
 func main() {

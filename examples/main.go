@@ -8,7 +8,7 @@ import (
 
 	"go.bug.st/serial"
 
-	"github.com/lsongdev/gps-go/nmea"
+	"github.com/lsongdev/nmea-go/nmea"
 )
 
 func main() {

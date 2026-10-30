@@ -1,11 +1,11 @@
-# nmea-Go
+# nmea-go
 
 Pure Go NMEA 0183 protocol parser library with zero dependencies, supporting GPS/BeiDou/GLONASS standard sentences.
 
 ## Quick Start
 
 ```go
-import "github.com/lsongdev/gps-go/nmea"
+import "github.com/lsongdev/nmea-go/nmea"
 
 s, _ := nmea.Parse("$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A")
 rmc := s.(nmea.RMC)

@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lsongdev/gps-go/nmea"
+	"github.com/lsongdev/nmea-go/nmea"
 )
 
 const (

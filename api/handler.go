@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lsongdev/gps-go/nmea"
+	"github.com/lsongdev/nmea-go/nmea"
 )
 
 const maxBodySize = 64 << 10

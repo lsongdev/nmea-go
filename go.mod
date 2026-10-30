@@ -1,4 +1,4 @@
-module github.com/lsongdev/gps-go
+module github.com/lsongdev/nmea-go
 
 go 1.26.1
 
