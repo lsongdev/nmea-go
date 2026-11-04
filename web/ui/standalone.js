@@ -44,7 +44,7 @@ function TopBar({ path }) {
     .sort((a, b) => b.path.length - a.path.length)[0];
   return html`
     <${Navbar}
-      className="topbar"
+      className="navbar"
       brand=${manifest.title}
       mark="◆"
       items=${(manifest.nav || []).map(i => ({ href: href(i.path), title: i.title, active: i === active }))}
