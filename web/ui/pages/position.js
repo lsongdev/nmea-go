@@ -1,5 +1,4 @@
-import { html, useEffect, useRef, useState } from '../lib/html.js';
-import { PageHeader, Alert, Loading, Empty, KeyValue, CopyButton } from '../lib/ui.js';
+import { html, useEffect, useRef, useState, PageHeader, Alert, Loading, Empty, KeyValue, CopyButton } from '@lsongdev/scripts/react/index.js';
 import { useLive, SourceNotice, FixBadge, FIX_MODES, QUALITY, fixed, dms, compass, utc } from '../nmea.js';
 
 const TRACK_POINTS = 600;
@@ -25,7 +24,7 @@ export default function Position() {
         sub=${fix.alt_std ? `Vertical ±${fixed(fix.alt_std)} m` : 'From GST, when sent'} />
       <${Stat} label="Dilution" value=${`HDOP ${fixed(fix.hdop)}`} sub=${`PDOP ${fixed(fix.pdop)} · VDOP ${fixed(fix.vdop)}`} />
     </div>
-    <div class="grid grid-auto grid-pair section">
+    <div class="grid grid-auto grid-pair">
       <div class="card">
         <h2>Coordinates</h2>
         ${hasPos ? html`
@@ -36,7 +35,7 @@ export default function Position() {
             ['Course', html`<${Heading} deg=${fix.course} /> ${fixed(fix.course, 1)}° ${compass(fix.course)}`],
             ['UTC', utc(fix.time)],
           ]} />
-          <div class="button-row section-sm">
+          <div class="button-actions">
             <${CopyButton} text=${`${fix.lat.toFixed(6)},${fix.lon.toFixed(6)}`} label="Copy coordinates" />
             <a class="button button-small" target="_blank" rel="noopener noreferrer"
               href=${`https://www.openstreetmap.org/?mlat=${fix.lat.toFixed(6)}&mlon=${fix.lon.toFixed(6)}#map=17/${fix.lat.toFixed(6)}/${fix.lon.toFixed(6)}`}>OpenStreetMap ↗</a>
@@ -62,7 +61,7 @@ function Stat({ label, value, sub }) {
   return html`<div class="card stat">
     <span class="stat-label">${label}</span>
     <span class="stat-value">${value}</span>
-    ${sub ? html`<span class="stat-sub">${sub}</span>` : null}
+    ${sub ? html`<span class="stat-hint">${sub}</span>` : null}
   </div>`;
 }
 

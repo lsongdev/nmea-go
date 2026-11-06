@@ -6,10 +6,12 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"embed"
+	"encoding/base64"
 	"encoding/hex"
 	"io/fs"
 	"net/http"
 	"path"
+	"regexp"
 	"strings"
 )
 
@@ -25,8 +27,21 @@ var Assets = func() fs.FS {
 	return sub
 }()
 
-// csp only allows the UI's own scripts, styles, images and connections.
-const csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " +
+// csp allows the panel's own scripts, styles, images and API calls, and the
+// inline import map of index.html by its hash.
+func csp(index []byte) string {
+	scripts := "'self'"
+	for _, m := range importMap.FindAllSubmatch(index, -1) {
+		sum := sha256.Sum256(m[1])
+		scripts += " 'sha256-" + base64.StdEncoding.EncodeToString(sum[:]) + "'"
+	}
+	return "script-src " + scripts + "; " + policy
+}
+
+// importMap finds inline import maps, which a script-src without a hash blocks.
+var importMap = regexp.MustCompile(`(?s)<script type="importmap">(.*?)</script>`)
+
+const policy = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " +
 	"connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 
 // Handler serves the UI at / and api at /api/. A non-empty token is
@@ -72,6 +87,8 @@ func Static(files fs.FS) http.Handler {
 		}
 		return nil
 	})
+	index, _ := fs.ReadFile(files, "index.html")
+	security := csp(index)
 	server := http.FileServerFS(files)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet && r.Method != http.MethodHead {
@@ -94,7 +111,7 @@ func Static(files fs.FS) http.Handler {
 		h.Set("Cache-Control", "no-cache")
 		h.Set("X-Content-Type-Options", "nosniff")
 		if name == "index.html" {
-			h.Set("Content-Security-Policy", csp)
+			h.Set("Content-Security-Policy", security)
 			h.Set("Referrer-Policy", "same-origin")
 			http.ServeFileFS(w, r, files, name) // FileServer would redirect index.html to ./
 			return

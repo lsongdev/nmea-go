@@ -1,7 +1,4 @@
-import { html, useEffect, useRef, useState } from '../lib/html.js';
-import { useAction } from '../lib/hooks.js';
-import { PageHeader, Alert, LogView, Table, Field } from '../lib/ui.js';
-import { setQuery } from '../lib/router.js';
+import { html, useEffect, useRef, useState, useAction, PageHeader, Alert, LogView, Table, Field, useRouter } from '@lsongdev/scripts/react/index.js';
 import { api, useLive, SourceNotice } from '../nmea.js';
 
 // The view keeps this many lines.
@@ -21,6 +18,7 @@ const DESCRIPTIONS = {
 };
 
 export default function Sentences({ query }) {
+  const router = useRouter();
   const type = query.type || '';
   const [lines, setLines] = useState([]);
   const [paused, setPaused] = useState(false);
@@ -49,7 +47,7 @@ export default function Sentences({ query }) {
     <${Alert} error=${error} />
     <${SourceNotice} status=${snap?.status} />
     <div class="toolbar">
-      <select class="input" value=${type} onChange=${e => { setLines([]); setQuery({ type: e.currentTarget.value }); }} aria-label="Sentence type">
+      <select class="input" value=${type} onChange=${e => { setLines([]); router.setQuery({ type: e.currentTarget.value }); }} aria-label="Sentence type">
         <option value="">All types</option>
         ${counts.map(([t]) => html`<option key=${t} value=${t}>${t}</option>`)}
       </select>
@@ -60,18 +58,15 @@ export default function Sentences({ query }) {
     </div>
     <${LogView} lines=${lines.map(l => (l.error ? { text: `${l.raw}    ← ${l.error}`, stream: 'stderr' } : l.raw))}
       follow=${!paused} empty="Waiting for sentences…" />
-    <div class="grid grid-auto grid-pair section">
-      <div>
+    <div class="grid grid-auto grid-pair">
+      <div class="stack">
         <h2 class="section-title">By type</h2>
-        <${Table}>
-          <thead><tr><th>Type</th><th>Description</th><th class="num">Count</th><th class="num">Share</th></tr></thead>
-          <tbody>${counts.map(([t, n]) => html`<tr key=${t}>
-            <td><a href="#" onClick=${e => { e.preventDefault(); setLines([]); setQuery({ type: t }); }} class="mono">${t}</a></td>
-            <td class="muted">${DESCRIPTIONS[t] || 'Not decoded'}</td>
-            <td class="num">${n.toLocaleString()}</td>
-            <td class="num">${total ? `${((n / total) * 100).toFixed(1)}%` : '—'}</td>
-          </tr>`)}</tbody>
-        <//>
+        <${Table} rows=${counts} rowKey=${([t]) => t} columns=${[
+          { key: 'type', title: 'Type', render: ([t]) => html`<a href=${router.href('/sentences', { type: t })} onClick=${() => setLines([])} class="mono">${t}</a>` },
+          { key: 'description', title: 'Description', grow: true, className: 'muted', render: ([t]) => DESCRIPTIONS[t] || 'Not decoded' },
+          { key: 'count', title: 'Count', align: 'end', render: ([, n]) => n.toLocaleString() },
+          { key: 'share', title: 'Share', align: 'end', render: ([, n]) => (total ? `${((n / total) * 100).toFixed(1)}%` : '—') },
+        ]} />
       </div>
       <${ParseTool} />
     </div>`;

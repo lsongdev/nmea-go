@@ -1,7 +1,6 @@
 // Shared state and formatting for the pages.
-import { html, useEffect, useRef, useState } from './lib/html.js';
+import { html, useEffect, useRef, useState, Alert, Badge } from '@lsongdev/scripts/react/index.js';
 import { createClient } from './lib/client.js';
-import { Alert, Badge } from './lib/ui.js';
 
 // api is the JSON API client; the API answers plain JSON, not {"data": …}.
 export const api = createClient('api/', { envelope: false });

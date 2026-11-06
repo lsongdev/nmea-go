@@ -1,3 +1,13 @@
+/* The GNSS panel's own styles. Components, layout and spacing come from
+   @lsongdev/stylesheets; these only cover what is particular to this panel. */
+.navbar.container { padding-top: 20px; }
+main.container { padding-block: 24px 64px; }
+:root { --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; --grid-gap: 16px; --col-min: 240px; }
+.grid-pair { --col-min: 380px; align-items: start; }
+.card h2, .section-title { margin: 0 0 12px; font-size: 15px; font-weight: 600; }
+form.form { display: grid; gap: 16px; }
+textarea.input { min-height: 90px; resize: vertical; font-family: var(--font-mono); line-height: 1.5; }
+
 /* GNSS views, using the upstream semantic colour tokens. */
 :root,
 :host {
@@ -244,7 +254,7 @@
   width: 100%;
   text-align: center;
   padding-top: 2px;
-  font-family: var(--mono);
+  font-family: var(--font-mono);
 }
 
 /* Sentences */
@@ -259,5 +269,5 @@
   overflow: auto;
   background: var(--color-surface-subtle);
   border-radius: var(--radius-md);
-  font: 12.5px/1.5 var(--mono);
+  font: 12.5px/1.5 var(--font-mono);
 }

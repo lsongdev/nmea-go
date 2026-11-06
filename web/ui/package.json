@@ -1,9 +1,9 @@
 {
   "name": "nmea-go-ui",
   "private": true,
-  "description": "Browser dependencies of this UI. node_modules is committed (npm ci output) so the Go module embeds it; make check-deps verifies it matches the lockfile.",
+  "description": "Browser dependencies embedded in the Go binary, pinned to library commits until they are published. Run make deps to install from the lockfile; node_modules is not tracked.",
   "dependencies": {
-    "@lsongdev/scripts": "0.1.0-rc.6",
-    "@lsongdev/stylesheets": "1.3.1"
+    "@lsongdev/scripts": "git+https://github.com/lsongdev/scripts.git#a4a0866f664206752d01fc11d51de3101271d2e9",
+    "@lsongdev/stylesheets": "git+https://github.com/lsongdev/stylesheets.git#c3d4fe4c531ebf8d54247304f260394584a5a658"
   }
 }

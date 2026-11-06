@@ -1,30 +1,27 @@
-// The GNSS panel: top navigation and the page for the location hash.
-import { html, render } from './lib/html.js';
-import { Navbar, DialogHost, Toaster } from './lib/ui.js';
-import { createRoutes, href, useLocation } from './lib/router.js';
+// The GNSS panel: navigation and the page for the location hash.
+import { html, render, lazy, useRoute, RouterView, Navbar, Alert, DialogHost, Toaster } from '@lsongdev/scripts/react/index.js';
+import { createRouter } from '@lsongdev/scripts/navigation/router.js';
+
+const router = createRouter([
+  ['/', lazy(() => import('./pages/position.js'))],
+  ['/satellites', lazy(() => import('./pages/satellites.js'))],
+  ['/sentences', lazy(() => import('./pages/sentences.js'))],
+], { hash: true });
+router.start();
 
 const nav = [
-  { path: '/', title: 'Position' },
-  { path: '/satellites', title: 'Satellites' },
-  { path: '/sentences', title: 'Sentences' },
+  { href: '#/', title: 'Position' },
+  { href: '#/satellites', title: 'Satellites' },
+  { href: '#/sentences', title: 'Sentences' },
 ];
 
-const Routes = createRoutes([
-  { path: '/', load: () => import('./pages/position.js') },
-  { path: '/satellites', load: () => import('./pages/satellites.js') },
-  { path: '/sentences', load: () => import('./pages/sentences.js') },
-], { notFound: 'Page not found' });
-
 function App() {
-  const { path, query } = useLocation();
-  // The longest matching entry is active; "/" only matches exactly.
-  const active = nav
-    .filter(i => path === i.path || (i.path !== '/' && path.startsWith(i.path + '/')))
-    .sort((a, b) => b.path.length - a.path.length)[0];
+  const route = useRoute(router);
   return html`
-    <${Navbar} brand="GNSS" mark="◆" label="Main"
-      items=${nav.map(i => ({ href: href(i.path), title: i.title, active: i === active }))} />
-    <main class="content"><${Routes} path=${path} query=${query} /></main>
+    <${Navbar} className="container" brand="GNSS" mark="◆" label="Main" items=${nav} current=${router.href(route.path)} />
+    <main class="container stack">
+      <${RouterView} router=${router} notFound=${html`<${Alert} variant="warning">Page not found<//>`} />
+    </main>
     <${DialogHost} />
     <${Toaster} />`;
 }

@@ -1,5 +1,4 @@
-import { html } from '../lib/html.js';
-import { PageHeader, Alert, Loading, Empty, Table, Badge } from '../lib/ui.js';
+import { html, PageHeader, Alert, Loading, Empty, Table, Badge } from '@lsongdev/scripts/react/index.js';
 import { useLive, SourceNotice, SYSTEMS, sysClass } from '../nmea.js';
 
 // SNR is drawn on a scale up to this many dB-Hz.
@@ -14,7 +13,7 @@ export default function Satellites() {
   return html`<${PageHeader} title="Satellites" subtitle=${`${used} used of ${sats.length} in view`} />
     <${Alert} error=${error} />
     <${SourceNotice} status=${snap.status} />
-    ${sats.length === 0 ? html`<${Empty}>No satellites in view yet (GSV sentences).<//>` : html`
+    ${sats.length === 0 ? html`<div class="empty">No satellites in view yet (GSV sentences).</div>` : html`
       <div class="grid grid-auto grid-pair">
         <div class="card">
           <h2>Sky</h2>
@@ -26,20 +25,17 @@ export default function Satellites() {
           <${SignalBars} sats=${sats} />
         </div>
       </div>
-      <div class="section">
-        <${Table}>
-          <thead><tr><th>System</th><th>PRN</th><th class="num">Elevation</th><th class="num">Azimuth</th><th class="num">SNR</th><th>In fix</th></tr></thead>
-          <tbody>${sats.map(s => html`<tr key=${s.talker + s.prn}>
-            <td><span class=${`sys-dot ${sysClass(s.system)}`}></span>${s.system}</td>
-            <td class="mono">${s.prn}</td>
-            <td class="num">${s.elevation}°</td>
-            <td class="num">${s.azimuth}°</td>
-            <td class="num">${s.snr ? `${s.snr} dB-Hz` : html`<span class="muted">not tracked</span>`}</td>
-            <td>${s.used ? html`<${Badge} variant="success">Used<//>` : html`<span class="muted">—</span>`}</td>
-          </tr>`)}</tbody>
-        <//>
-      </div>`}`;
+      <${Table} rows=${sats} rowKey=${s => s.talker + s.prn} columns=${SATELLITES} />`}`;
 }
+
+const SATELLITES = [
+  { key: 'system', title: 'System', sort: true, render: s => html`<span class=${`sys-dot ${sysClass(s.system)}`}></span>${s.system}` },
+  { key: 'prn', title: 'PRN', className: 'mono', sort: (a, b) => Number(a.prn) - Number(b.prn) },
+  { key: 'elevation', title: 'Elevation', align: 'end', sort: true, render: s => `${s.elevation}°` },
+  { key: 'azimuth', title: 'Azimuth', align: 'end', sort: true, render: s => `${s.azimuth}°` },
+  { key: 'snr', title: 'SNR', align: 'end', sort: true, render: s => (s.snr ? `${s.snr} dB-Hz` : html`<span class="muted">not tracked</span>`) },
+  { key: 'used', title: 'In fix', render: s => (s.used ? html`<${Badge} variant="success">Used<//>` : html`<span class="muted">—</span>`) },
+];
 
 function Legend({ systems, sats }) {
   return html`<div class="legend sky-legend">
