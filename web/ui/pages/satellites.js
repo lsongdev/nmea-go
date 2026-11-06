@@ -1,5 +1,5 @@
 import { html } from '../lib/html.js';
-import { Page, Notice, Loading, Empty, Table, Badge } from '../lib/ui.js';
+import { PageHeader, Alert, Loading, Empty, Table, Badge } from '../lib/ui.js';
 import { useLive, SourceNotice, SYSTEMS, sysClass } from '../nmea.js';
 
 // SNR is drawn on a scale up to this many dB-Hz.
@@ -7,12 +7,12 @@ const SNR_MAX = 55;
 
 export default function Satellites() {
   const { snap, error } = useLive();
-  if (!snap) return html`<${Page} title="Satellites">${error ? html`<${Notice} error=${error} />` : html`<${Loading} />`}<//>`;
+  if (!snap) return html`<${PageHeader} title="Satellites" />${error ? html`<${Alert} error=${error} />` : html`<${Loading} />`}`;
   const sats = snap.satellites;
   const systems = SYSTEMS.filter(s => sats.some(v => v.system === s));
   const used = sats.filter(s => s.used).length;
-  return html`<${Page} title="Satellites" subtitle=${`${used} used of ${sats.length} in view`}>
-    <${Notice} error=${error} />
+  return html`<${PageHeader} title="Satellites" subtitle=${`${used} used of ${sats.length} in view`} />
+    <${Alert} error=${error} />
     <${SourceNotice} status=${snap.status} />
     ${sats.length === 0 ? html`<${Empty}>No satellites in view yet (GSV sentences).<//>` : html`
       <div class="grid grid-auto grid-pair">
@@ -35,11 +35,10 @@ export default function Satellites() {
             <td class="num">${s.elevation}°</td>
             <td class="num">${s.azimuth}°</td>
             <td class="num">${s.snr ? `${s.snr} dB-Hz` : html`<span class="muted">not tracked</span>`}</td>
-            <td>${s.used ? html`<${Badge} tone="green">Used<//>` : html`<span class="muted">—</span>`}</td>
+            <td>${s.used ? html`<${Badge} variant="success">Used<//>` : html`<span class="muted">—</span>`}</td>
           </tr>`)}</tbody>
         <//>
-      </div>`}
-  <//>`;
+      </div>`}`;
 }
 
 function Legend({ systems, sats }) {

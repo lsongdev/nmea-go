@@ -59,7 +59,7 @@ Open http://localhost:8080. Set `-token` (or `NMEA_TOKEN`) to require a Bearer t
 | `POST /api/parse` | Decode `{"sentence": "$..."}` without logging it |
 | `GET /api/events?sentences=1` | Server-sent events: `state` on change, `sentence` per line |
 
-The `api` package (`api.NewTracker`, `api.NewHandler`) and `web` package (`web.Standalone`, `web.Assets`) can be embedded in other programs.
+The `api` package (`api.NewTracker`, `api.NewHandler`) and `web` package (`web.Handler`, `web.Assets`) can be embedded in other programs.
 
 ## Get UTC Time
 

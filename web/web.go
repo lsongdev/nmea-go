@@ -1,9 +1,5 @@
 // Package web serves the browser UI (native ES modules in ui/, no build
 // step) next to the API.
-//
-// The UI follows the panel module contract: manifest.json at the root of
-// Assets describes it and module.js exports mount(el, ctx), so a panel shell
-// can host it; index.html with standalone.js hosts it on its own.
 package web
 
 import (
@@ -20,7 +16,7 @@ import (
 //go:embed ui
 var embedded embed.FS
 
-// Assets is the browser UI; manifest.json describes it.
+// Assets is the browser UI.
 var Assets = func() fs.FS {
 	sub, err := fs.Sub(embedded, "ui")
 	if err != nil {
@@ -33,11 +29,11 @@ var Assets = func() fs.FS {
 const csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; " +
 	"connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 
-// Standalone serves the UI at / and api at /api/. A non-empty token is
+// Handler serves the UI at / and api at /api/. A non-empty token is
 // required on every request, either as "Authorization: Bearer <token>" (API
 // clients) or as the password of HTTP basic authentication (browsers, which
 // prompt for it).
-func Standalone(api http.Handler, token string) http.Handler {
+func Handler(api http.Handler, token string) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/api/", http.StripPrefix("/api", api))
 	mux.Handle("/", Static(Assets))

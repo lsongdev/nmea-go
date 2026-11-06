@@ -139,3 +139,14 @@ textarea.input {
   margin: 0 0 14px;
   overflow-wrap: anywhere;
 }
+
+/* Page frame: the top navigation and a centred 1100px column. */
+.navbar, .content { max-width: 1100px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+.navbar { padding-top: 20px; }
+.navbar .navbar-brand-mark { color: var(--color-primary); }
+.content { padding-top: 24px; padding-bottom: 64px; }
+@media (max-width: 760px) {
+  .navbar, .content { padding-left: 16px; padding-right: 16px; }
+  .navbar { padding-top: 14px; }
+  .content { padding-top: 20px; padding-bottom: 48px; }
+}

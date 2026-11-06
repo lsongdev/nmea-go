@@ -1,12 +1,14 @@
 // Shared state and formatting for the pages.
 import { html, useEffect, useRef, useState } from './lib/html.js';
-import { usePanel } from './lib/panel.js';
-import { Badge, Notice } from './lib/ui.js';
+import { createClient } from './lib/client.js';
+import { Alert, Badge } from './lib/ui.js';
+
+// api is the JSON API client; the API answers plain JSON, not {"data": …}.
+export const api = createClient('api/', { envelope: false });
 
 // useLive returns the latest /state snapshot, kept current by the /events
 // stream. onSentence, when given, receives every raw sentence.
 export function useLive(onSentence) {
-  const { client } = usePanel();
   const [snap, setSnap] = useState(null);
   const [error, setError] = useState(null);
   const sentence = useRef(onSentence);
@@ -17,7 +19,7 @@ export function useLive(onSentence) {
       onerror: () => setError(new Error('The live stream closed; reload the page to reconnect.')),
     };
     if (onSentence) handlers.sentence = line => sentence.current?.(line);
-    return client.stream('events', onSentence ? { sentences: 1 } : null, handlers);
+    return api.stream('events', onSentence ? { sentences: 1 } : null, handlers);
   }, []);
   return { snap, error };
 }
@@ -26,10 +28,10 @@ export function useLive(onSentence) {
 export function SourceNotice({ status }) {
   if (!status) return null;
   if (!status.connected) {
-    return html`<${Notice} tone="warn">Not reading <code>${status.source}</code>${status.error ? `: ${status.error}` : ''}. Retrying…<//>`;
+    return html`<${Alert} variant="warning">Not reading <code>${status.source}</code>${status.error ? `: ${status.error}` : ''}. Retrying…<//>`;
   }
   const silent = status.last_line ? (Date.now() - new Date(status.last_line)) / 1000 : Infinity;
-  if (silent > 5) return html`<${Notice} tone="info">Connected to <code>${status.source}</code>, but no sentence has arrived ${status.total ? 'for a while' : 'yet'}. Check the baud rate.<//>`;
+  if (silent > 5) return html`<${Alert} variant="info">Connected to <code>${status.source}</code>, but no sentence has arrived ${status.total ? 'for a while' : 'yet'}. Check the baud rate.<//>`;
   return null;
 }
 
@@ -40,8 +42,8 @@ export const QUALITY = {
 };
 
 export function FixBadge({ fix }) {
-  if (!fix.valid || fix.mode < 2) return html`<${Badge} tone="red" dot>No fix<//>`;
-  return html`<${Badge} tone=${fix.mode === 3 ? 'green' : 'amber'} dot>${FIX_MODES[fix.mode] || 'Fix'}<//>`;
+  if (!fix.valid || fix.mode < 2) return html`<${Badge} variant="danger" dot>No fix<//>`;
+  return html`<${Badge} variant=${fix.mode === 3 ? 'success' : 'warning'} dot>${FIX_MODES[fix.mode] || 'Fix'}<//>`;
 }
 
 // SYSTEMS orders the constellations; nmea.css colours them (.sys-<key>).

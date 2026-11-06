@@ -47,7 +47,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:              *listen,
-		Handler:           web.Standalone(api.NewHandler(tracker, api.Options{}), *token),
+		Handler:           web.Handler(api.NewHandler(tracker, api.Options{}), *token),
 		ReadHeaderTimeout: 10 * time.Second,
 		BaseContext:       func(net.Listener) context.Context { return ctx },
 	}

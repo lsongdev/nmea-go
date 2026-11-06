@@ -1,8 +1,8 @@
 import { html, useEffect, useRef, useState } from '../lib/html.js';
-import { usePanel } from '../lib/panel.js';
 import { useAction } from '../lib/hooks.js';
-import { Page, Notice, LogView, Table, Field } from '../lib/ui.js';
-import { useLive, SourceNotice } from '../nmea.js';
+import { PageHeader, Alert, LogView, Table, Field } from '../lib/ui.js';
+import { setQuery } from '../lib/router.js';
+import { api, useLive, SourceNotice } from '../nmea.js';
 
 // The view keeps this many lines.
 const KEEP = 300;
@@ -20,8 +20,7 @@ const DESCRIPTIONS = {
   TXT: 'Text message',
 };
 
-export default function Sentences({ query, setQuery }) {
-  const { api } = usePanel();
+export default function Sentences({ query }) {
   const type = query.type || '';
   const [lines, setLines] = useState([]);
   const [paused, setPaused] = useState(false);
@@ -46,8 +45,8 @@ export default function Sentences({ query, setQuery }) {
 
   const counts = Object.entries(snap?.status.counts || {}).sort((a, b) => b[1] - a[1]);
   const total = snap?.status.total || 0;
-  return html`<${Page} title="Sentences" subtitle=${snap ? `${total.toLocaleString()} received${snap.status.invalid ? `, ${snap.status.invalid.toLocaleString()} invalid` : ''}` : null}>
-    <${Notice} error=${error} />
+  return html`<${PageHeader} title="Sentences" subtitle=${snap ? `${total.toLocaleString()} received${snap.status.invalid ? `, ${snap.status.invalid.toLocaleString()} invalid` : ''}` : null} />
+    <${Alert} error=${error} />
     <${SourceNotice} status=${snap?.status} />
     <div class="toolbar">
       <select class="input" value=${type} onChange=${e => { setLines([]); setQuery({ type: e.currentTarget.value }); }} aria-label="Sentence type">
@@ -75,8 +74,7 @@ export default function Sentences({ query, setQuery }) {
         <//>
       </div>
       <${ParseTool} />
-    </div>
-  <//>`;
+    </div>`;
 }
 
 // merge appends lines not yet shown, by sequence number, keeping the last KEEP.
@@ -87,7 +85,6 @@ function merge(old, add) {
 }
 
 function ParseTool() {
-  const { api } = usePanel();
   const [sentence, setSentence] = useState('$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A');
   const [result, setResult] = useState(null);
   const { busy, error, run } = useAction();
@@ -104,7 +101,7 @@ function ParseTool() {
     <div class="form-actions">
       <button class="button button-primary" type="submit" disabled=${busy || !sentence.trim()}>Decode</button>
     </div>
-    <${Notice} error=${error} />
+    <${Alert} error=${error} />
     ${result ? html`<pre class="decoded">${JSON.stringify(result.data, null, 2)}</pre>` : null}
   </form>`;
 }

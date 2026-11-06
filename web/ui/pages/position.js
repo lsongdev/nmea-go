@@ -1,5 +1,5 @@
 import { html, useEffect, useRef, useState } from '../lib/html.js';
-import { Page, Notice, Loading, Empty, KV, CopyButton } from '../lib/ui.js';
+import { PageHeader, Alert, Loading, Empty, KeyValue, CopyButton } from '../lib/ui.js';
 import { useLive, SourceNotice, FixBadge, FIX_MODES, QUALITY, fixed, dms, compass, utc } from '../nmea.js';
 
 const TRACK_POINTS = 600;
@@ -7,13 +7,13 @@ const TRACK_POINTS = 600;
 export default function Position() {
   const { snap, error } = useLive();
   const track = useTrack(snap?.fix);
-  if (!snap) return html`<${Page} title="Position">${error ? html`<${Notice} error=${error} />` : html`<${Loading} />`}<//>`;
+  if (!snap) return html`<${PageHeader} title="Position" />${error ? html`<${Alert} error=${error} />` : html`<${Loading} />`}`;
   const { fix, status, satellites } = snap;
   const used = satellites.filter(s => s.used).length;
   const hasPos = fix.valid && fix.updated && (fix.lat || fix.lon);
   const accuracy = fix.lat_std || fix.lon_std ? Math.hypot(fix.lat_std, fix.lon_std) : null;
-  return html`<${Page} title="Position" subtitle=${utc(fix.time)} actions=${html`<${FixBadge} fix=${fix} />`}>
-    <${Notice} error=${error} />
+  return html`<${PageHeader} title="Position" subtitle=${utc(fix.time)} actions=${html`<${FixBadge} fix=${fix} />`} />
+    <${Alert} error=${error} />
     <${SourceNotice} status=${status} />
     <div class="grid grid-auto-fill">
       <${Stat} label="Fix" value=${fix.valid ? FIX_MODES[fix.mode] || 'Fix' : 'No fix'}
@@ -30,7 +30,7 @@ export default function Position() {
         <h2>Coordinates</h2>
         ${hasPos ? html`
           <div class="coords mono">${fixed(fix.lat, 6)}, ${fixed(fix.lon, 6)}</div>
-          <${KV} items=${[
+          <${KeyValue} items=${[
             ['Latitude', dms(fix.lat, true)],
             ['Longitude', dms(fix.lon, false)],
             ['Course', html`<${Heading} deg=${fix.course} /> ${fixed(fix.course, 1)}° ${compass(fix.course)}`],
@@ -49,14 +49,13 @@ export default function Position() {
     </div>
     <div class="card">
       <h2>Receiver</h2>
-      <${KV} items=${[
+      <${KeyValue} items=${[
         ['Source', html`<code>${status.source}</code>`],
         ['State', status.connected ? 'Reading' : `Down${status.error ? `: ${status.error}` : ''}`],
         ['Sentences', `${status.total.toLocaleString()}${status.invalid ? ` (${status.invalid.toLocaleString()} invalid)` : ''}`],
         ['Messages', status.messages.length ? html`<div class="messages">${status.messages.slice(-5).map((m, i) => html`<div key=${i} class="mono">${m}</div>`)}</div>` : null],
       ]} />
-    </div>
-  <//>`;
+    </div>`;
 }
 
 function Stat({ label, value, sub }) {
